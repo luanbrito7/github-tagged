@@ -1,0 +1,30 @@
+{
+  "name": "github-tagged",
+  "version": "1.0.0",
+  "description": "Simple javascript project that allows managing starred github repositories.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luanbrito7/github-tagged.git"
+  },
+  "keywords": [
+    "github",
+    "tag",
+    "star",
+    "manage"
+  ],
+  "author": "Luan Brito",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luanbrito7/github-tagged/issues"
+  },
+  "homepage": "https://github.com/luanbrito7/github-tagged#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
