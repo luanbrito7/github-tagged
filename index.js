@@ -1,12 +1,18 @@
 import express from 'express'
+import bodyParser from 'body-parser'
 import axios from 'axios'
 import http from 'http'
 import dotenv from 'dotenv'
 import {connectDB, db} from './db.js'
 import {getUserFactory, createUserFactory} from './entities/user.js'
+import {getTagsFactory, createTagFactory, updateTagFactory, deleteTagFactory} from './entities/tag.js'
 
 dotenv.config()
 const app = express()
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json())
 const server = http.createServer(app)
 
 const clientId = process.env.CLIENT_ID;
@@ -15,33 +21,75 @@ const githubApiUrl = process.env.GITHUB_API_URL;
 
 const getUser = getUserFactory()
 const createUser = createUserFactory()
+const getTags = getTagsFactory()
+const createTag = createTagFactory()
+const updateTag = updateTagFactory()
+const deleteTag = deleteTagFactory()
 
 app.get('/', (req, res) => {
     let token = req.header('token')
     if (token) {
-        axios.get(`${githubApiUrl}/user`, config(token))
-        .then(res => res.data)
-        .then(data => {
-            return { githubId: data.id, login: data.login }
-        })
-        .then(async userData => {
-            let tags = find_tags(userData)
-            let repos = await getStarredRepos(token)
-            let foundUser = getUser(userData.githubId)
+        getUserData(token, async (userData, error) => {
+            if (error) res.redirect("/login")
+            let foundUser = await getUser(userData.githubId)
             if (!foundUser) {
-                let opa = createUser(userData)
-                console.log(opa)
+                createUser(userData)
             }
+            let tags = await getTags(userData.githubId)
+            let repos = await getStarredRepos(token)
             res.status(200).json({tags: tags, repos: repos})
-        })
-        .catch(err => {
-              console.log(err)
-              res.redirect("/login")
         })
     } else {
         res.redirect("/login")
     }
 });
+
+app.post('/tag', (req, res) => {
+    let token = req.header('token')
+    if (token) {
+        let body = req.body
+        getUserData(token, (userData, error) => {
+            if (isValidTag(body)) {
+                let tag = createTag({...userData, name: req.body.name})
+                res.status(200).json({tag})
+            } else {
+                res.status(500).json({error: "invalid tag name"})
+            }
+        })
+    } else {
+        res.redirect("/login")
+    }
+})
+
+app.put('/tag', (req, res) => {
+    let token = req.header('token')
+    if (token) {
+        getUserData(token, (userData, error) => {
+            let body = req.body
+            updateTag({
+                id: body._id,
+                name: body.name,
+                repositories: body.repos,
+                ownerId: userData.githubId
+            })
+        })
+    } else {
+        res.redirect("/login")
+    }
+})
+
+app.delete('/tag', (req, res) => {
+    let token = req.header('token')
+    if (token) {
+        getUserData(token, (userData, error) => {
+            let body = req.body
+            deleteTag({
+                id: body._id,
+                ownerId: userData.githubId
+            })
+        })
+    }
+})
 
 app.get('/login', (req, res) => {
     res.redirect(`https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo`);
@@ -73,27 +121,39 @@ let config = (token) => {
 }
 
 let header = (token) => {
-    // let newHeader = { 
-    //     'Content-Type': 'application/json'
-    // }
     if (token) {
         return { 
             'Content-Type': 'application/json',
             'Authorization': `token ${token}`
         }
-        // newHeader['Authorization'] = `token ${token}`
     }
     return {
         'Content-Type': 'application/json'
     }
 }
 
-var find_tags = () => {
-    return [1, 2, 3]
+let getUserData = (token, callback) => {
+    axios.get(`${githubApiUrl}/user`, config(token))
+    .then(res => res.data)
+    .then(data => {
+        return { githubId: data.id, login: data.login }
+    })
+    .then(userData => {
+        callback(userData)
+    })
+    .catch(err => {
+          console.log(err)
+          res.redirect("/login")
+    })
 }
 
 let getStarredRepos = (token) => {
     return axios.get(`${githubApiUrl}/user/starred`, config(token))
     .then(res => res.data)
     .catch(err => err)
+}
+
+let isValidTag = (body) => {
+    if (body.name && body.name.length > 0) return true
+    else return false
 }
