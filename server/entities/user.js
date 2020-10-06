@@ -1,22 +1,24 @@
 import User from '../schemas/user.js'
 
 export function getUserFactory() {
-    return function getUser(githubId) {
-        User.findOne({ 'githubId': githubId }, function (err, user) {
+    return async function getUser(githubId) {
+        let foundUser = undefined
+        await User.findOne({ '_id': githubId }, function (err, user) {
             if (err) {
                 console.log(err)
                 return null
                 // return err
             }
-            return user
+            foundUser = user
         })
+        return foundUser
     }
 }
 
 export function createUserFactory() {
     return function createUser({githubId, login}) {
         const newUser = new User({
-            githubId: githubId,
+            _id: githubId,
             login: login
         });
         newUser.save(function (err) {

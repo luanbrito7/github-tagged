@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    githubId: {
+    _id: {
         type: Number,
         required: true
     }
