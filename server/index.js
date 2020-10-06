@@ -2,6 +2,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import axios from 'axios'
 import http from 'http'
+import cors from 'cors'
 import dotenv from 'dotenv'
 import {connectDB, db} from './db.js'
 import {getUserFactory, createUserFactory} from './entities/user.js'
@@ -12,6 +13,7 @@ const app = express()
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.use(cors());
 app.use(bodyParser.json())
 const server = http.createServer(app)
 
@@ -40,7 +42,7 @@ app.get('/', (req, res) => {
             res.status(200).json({tags: tags, repos: repos})
         })
     } else {
-        res.redirect("/login")
+        res.status(401).json({error: "Unauthorized Error"})
     }
 });
 
@@ -57,7 +59,7 @@ app.post('/tag', (req, res) => {
             }
         })
     } else {
-        res.redirect("/login")
+        res.status(401).json({error: "Unauthorized Error"})
     }
 })
 
@@ -74,7 +76,7 @@ app.put('/tag', (req, res) => {
             })
         })
     } else {
-        res.redirect("/login")
+        res.status(401).json({error: "Unauthorized Error"})
     }
 })
 
@@ -88,6 +90,8 @@ app.delete('/tag', (req, res) => {
                 ownerId: userData.githubId
             })
         })
+    } else {
+        res.status(401).json({error: "Unauthorized Error"})
     }
 })
 
@@ -105,14 +109,15 @@ app.get('/oauth-callback', (req, res) => {
     axios.post(`https://github.com/login/oauth/access_token`, body, options)
       .then(res => res.data['access_token'])
       .then(token => {
-        res.status(200).json({ token })
+        res.redirect(`http://localhost:3000?token=${token}`)
+        // res.status(200).json({ token })
       }).
       catch(err => res.status(500).json({ message: err.message }))
 })
 
 connectDB().then(() => {
-    server.listen(3000, () => {
-        console.log("Server listening on port 3000.")
+    server.listen(8080, () => {
+        console.log("Server listening on port 8080.")
     })
 })
 
