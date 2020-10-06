@@ -1,7 +1,6 @@
 import React from 'react';
-import logo from './logo.svg';
-import api from './api';
 import './App.css';
+import Tag from './Tag';
 import { BrowserRouter as Router, Switch, Route, useLocation } from "react-router-dom";
 
 function useQuery() {
@@ -29,23 +28,13 @@ function QueryScreen() {
 }
 
 function Home({ token }) {
+  if (token) localStorage.setItem('token', token)
   let localToken = localStorage.getItem('token')
-  if (token) {
-    localStorage.setItem('token', token)
-    api.get("/").then(res => console.log(res), err => console.log(err))
+  if (localToken) {
     return (
-      <div>
-        Welcome
-      </div>
+      <Tag />
     );
-  } else if (localToken) {
-    return (
-      <div>
-        Welcome w localToken
-      </div>
-    );
-  }
-  else {
+  } else {
     return Login()
   }
 }
