@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-// const bcrypt = require('bcrypt')
 
 const userSchema = new mongoose.Schema({
     login: {
