@@ -5,8 +5,8 @@ import http from 'http'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import {connectDB, db} from './db.js'
-import {getUserFactory, createUserFactory} from './entities/user.js'
-import {getTagsFactory, createTagFactory, updateTagFactory, deleteTagFactory} from './entities/tag.js'
+import UserFactory from './entities/user.js'
+import TagFactory from './entities/tag.js'
 
 dotenv.config()
 const app = express()
@@ -21,12 +21,17 @@ const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const githubApiUrl = process.env.GITHUB_API_URL;
 
-const getUser = getUserFactory()
-const createUser = createUserFactory()
-const getTags = getTagsFactory()
-const createTag = createTagFactory()
-const updateTag = updateTagFactory()
-const deleteTag = deleteTagFactory()
+const {
+    getUser,
+    createUser
+} = UserFactory()
+
+const {
+    getTags,
+    createTag,
+    updateTag,
+    deleteTag
+} = TagFactory()
 
 app.get('/', (req, res) => {
     let token = req.header('token')
@@ -110,7 +115,6 @@ app.get('/oauth-callback', (req, res) => {
       .then(res => res.data['access_token'])
       .then(token => {
         res.redirect(`http://localhost:3000?token=${token}`)
-        // res.status(200).json({ token })
       }).
       catch(err => res.status(500).json({ message: err.message }))
 })
