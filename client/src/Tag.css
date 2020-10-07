@@ -1,10 +1,28 @@
 .container {
     display: flex;
-    flex-direction: row;
 }
 
-.child-container {
+.section {
     width: 50%;
     display: flex;
+    flex-direction: column;
+    background-color: lightblue;
+}
+
+.element-container {
+    width: 100%;
+    display: flex;
     justify-content: center;
+}
+
+.row-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 60px;
+}
+
+.selected-container {
+    border: 1px solid grey;
 }

@@ -10,9 +10,7 @@ class Api {
 
     get(url, params = []) {
         let token = localStorage.getItem('token');
-        console.log(token)
         const paramString = params.join('/');
-        console.log(paramString)
         return this.client.get(url, {
             headers: {
                 token: token
@@ -21,6 +19,11 @@ class Api {
                 params: paramString
             }
         });
+    }
+
+    put(url, data) {
+        let token = localStorage.getItem('token');
+        return this.client.put(url, data, { headers: { token: token }});
     }
 }
 
