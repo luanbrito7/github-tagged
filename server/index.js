@@ -4,9 +4,9 @@ import axios from 'axios'
 import http from 'http'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import {connectDB, db} from './db.js'
-import UserFactory from './entities/user.js'
-import TagFactory from './entities/tag.js'
+import {connectDB} from './db.js'
+import UserFactory from './db/user.js'
+import TagFactory from './db/tag.js'
 
 dotenv.config()
 const app = express()
@@ -55,9 +55,9 @@ app.post('/tag', (req, res) => {
     let token = req.header('token')
     if (token) {
         let body = req.body
-        getUserData(token, (userData, error) => {
+        getUserData(token, async (userData, error) => {
             if (isValidTag(body)) {
-                let tag = createTag({...userData, name: req.body.name})
+                let tag = await createTag({...userData, name: req.body.name})
                 res.status(200).json({tag})
             } else {
                 res.status(500).json({error: "invalid tag name"})
