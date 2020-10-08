@@ -25,6 +25,11 @@ class Api {
         let token = localStorage.getItem('token');
         return this.client.put(url, data, { headers: { token: token }});
     }
+
+    post(url, data) {
+        let token = localStorage.getItem('token');
+        return this.client.post(url, data, { headers: { token: token }});
+    }
 }
 
 let api = new Api()

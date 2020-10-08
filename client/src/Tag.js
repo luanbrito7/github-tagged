@@ -4,6 +4,34 @@ import './Tag.css'
 import plusIcon from './plus.png';
 import minusIcon from './minus.png';
 
+const InputTagComponent = function({isOpen, newTag, toggleInput}) {
+    async function saveTag() {
+        let res = await api.post("/tag", {name: name})
+        if (res.status == 200) {
+            newTag(res.data.tag)
+            toggleInput()
+        }
+    }
+
+    const [name, setName] = useState("");
+
+    if (isOpen) {
+        return (
+            <div>
+                <form>
+                    <input
+                    placeholder="tag name"
+                    value={name}
+                    onChange={e => setName(e.target.value)} />
+                </form>
+                <button onClick={() => saveTag()}>Create Tag</button>
+            </div>
+        )
+    } else {
+        return null
+    }
+}
+
 const ReposComponent = function({selectedTag, repos, tags, removeRepo, addRepo}) {
     useEffect(() => {}, [selectedTag, repos, tags])
     if (selectedTag === null) {
@@ -56,7 +84,7 @@ const TagsComponent = function({tags, repos, selectedTag, onSelectTag}) {
             return (
                 <div onClick={() => onSelectTag(index)}
                 className="element-container" key={_id}>
-                    <p>{name}</p>
+                    <span>{name}</span>
                 </div>
             )
         } else {
@@ -66,13 +94,16 @@ const TagsComponent = function({tags, repos, selectedTag, onSelectTag}) {
             return (
                 <div onClick={() => onSelectTag(null)}
                 className="element-container selected-container" key={_id}>
-                    <p>{name}</p>
-                    {reposList(selectedRepos)}
+                    <span>{name}</span>
+                    <div>
+                        {reposList(selectedRepos)}
+                    </div>
+                    <button onClick={() => saveTag()}>Save tag.</button>
                 </div>
             )
         }
     })
-    return [...selectedTags, <button onClick={() => saveTag()}>Save tag.</button>]
+    return selectedTags
 }
 
 const Tag = function() {
@@ -80,6 +111,7 @@ const Tag = function() {
     const [repos, setRepos] = useState([]);
     const [tags, setTags] = useState([]);
     const [selectedTag, setSelectedTag] = useState(null);
+    const [openInput, setOpenInput] = useState(false);
 
     useEffect(() => {
         async function fetchData() {
@@ -92,8 +124,16 @@ const Tag = function() {
         fetchData()
     }, [])
 
+    function newTag(tag) {
+        setTags([...tags, tag])
+    }
+
     function onSelectTag(index) {
         setSelectedTag(index)
+    }
+
+    function toggleInput() {
+        setOpenInput(!openInput)
     }
 
     function addRepo(id) {
@@ -120,7 +160,9 @@ const Tag = function() {
             <div className="section">
                 <div className="element-container">
                     <h2>Tags</h2>
+                    <img onClick={() => toggleInput()} width={30} height={30} alt="plus-tag" src={plusIcon}></img>
                 </div>
+                <InputTagComponent toggleInput={toggleInput} newTag={newTag} isOpen={openInput}/>
                 <TagsComponent repos={repos} tags={tags} selectedTag={selectedTag} onSelectTag={onSelectTag} />
             </div>
         </div>
